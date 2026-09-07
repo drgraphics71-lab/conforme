@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { messageErreur } from '@/lib/fonctions';
 import { calculerRisque, controler, deduireVerdict, type Constat } from './regles';
 import { estUneVideo, extraireAudio, extraireImages, lireNomFichier } from './video';
 import type {
@@ -377,7 +378,7 @@ export async function analyserLot(
   const { data, error } = await supabase.functions.invoke('gaby', {
     body: { action: 'verifier', espace_id: espaceId, lot_id: lotId },
   });
-  if (error) throw error;
+  if (error) throw new Error(await messageErreur(error));
   if (data?.erreur) throw new Error(data.erreur);
   return data as { analysees: number; bloquantes: number };
 }
@@ -391,7 +392,7 @@ export async function redigerMessage(
   const { data, error } = await supabase.functions.invoke('gaby', {
     body: { action: 'message', espace_id: espaceId, lot_id: lotId, ...options },
   });
-  if (error) throw error;
+  if (error) throw new Error(await messageErreur(error));
   if (data?.erreur) throw new Error(data.erreur);
   return data.message as string;
 }

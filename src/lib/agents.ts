@@ -24,9 +24,10 @@ export const AGENTS: Agent[] = [
   {
     cle: 'nina',
     nom: 'Nina',
-    role: 'À définir',
-    description: "Le deuxième poste. Son périmètre reste à arrêter.",
-    disponible: false,
+    role: 'Après-refus',
+    description:
+      "Lit la notification de refus, dit ce qui l'a réellement déclenché, réécrit la pub et rédige la demande de révision.",
+    disponible: true,
     teintes: ['#F472B6', '#A78BFA'],
   },
 ];

@@ -4,6 +4,7 @@ import Connexion from '@/screens/Connexion';
 import PremierEspace from '@/screens/PremierEspace';
 import ChoixAgent from '@/screens/ChoixAgent';
 import AgentGaby from '@/agents/gaby/AgentGaby';
+import AgentNina from '@/agents/nina/AgentNina';
 import { agentMemorise, memoriserAgent, type CleAgent } from '@/lib/agents';
 
 function Application() {
@@ -27,9 +28,8 @@ function Application() {
   if (sansEspace || !espace) return <PremierEspace />;
   if (!agent) return <ChoixAgent onChoisir={choisirAgent} />;
 
-  // Nina n'existe pas encore : on retombe sur le choix d'agent.
   if (agent === 'gaby') return <AgentGaby onChangerAgent={() => choisirAgent(null)} />;
-  return <ChoixAgent onChoisir={choisirAgent} />;
+  return <AgentNina onChangerAgent={() => choisirAgent(null)} />;
 }
 
 export default function App() {

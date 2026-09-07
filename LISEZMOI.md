@@ -13,9 +13,8 @@ abonnement par espace. Un espace regroupe ses clients, ses lots de
 publicités et ses règles maison. C'est ce qui permettra de vendre le
 produit à plusieurs agences sans rien recloisonner ensuite.
 
-Un agent livré, **Gaby**, la conformité publicitaire. Un deuxième poste
-est annoncé sur l'écran de choix, **Nina**, encore grisé : son périmètre
-reste à arrêter.
+Deux agents. **Gaby** s'occupe de l'avant : vérifier les pubs avant
+diffusion. **Nina** s'occupe de l'après : traiter les refus déjà tombés.
 
 ## Mise en route
 
@@ -23,8 +22,8 @@ reste à arrêter.
    anon dans Settings → API. Copiez `.env.example` en `.env` et remplissez
    les deux lignes.
 
-2. **Base.** Dans le SQL Editor, exécutez `supabase/migrations/001_socle.sql`
-   puis `002_gaby.sql`, dans cet ordre. Le premier crée espaces, membres,
+2. **Base.** Dans le SQL Editor, exécutez `001_socle.sql`, `002_gaby.sql`
+   puis `004_nina.sql`, dans cet ordre. Le premier crée espaces, membres,
    abonnements et la fonction `creer_espace`. Le second crée les tables de
    Gaby et le bucket privé `pubs`.
 
@@ -38,6 +37,7 @@ reste à arrêter.
 5. **Analyse.** Le bouton « Vérifier le lot » a besoin de la fonction :
    ```
    supabase functions deploy gaby
+   supabase functions deploy nina
    supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
    supabase secrets set TRANSCRIPTION_API_KEY=...   # facultatif
    ```
@@ -99,6 +99,41 @@ Deux réglages par lot, court/détaillé et direct/cordial. Le tutoiement et la
 signature se règlent par client. Si un retour sonne trop lisse, c'est cette
 consigne qu'il faut resserrer, pas le code autour.
 
+## Comment travaille Nina
+
+On crée un **refus**, on y dépose les captures de la notification Meta —
+le bandeau du gestionnaire de publicités, le mail, l'écran de la Page — et
+on lance le diagnostic.
+
+Nina lit la capture et en tire le motif exact affiché, la règle citée, et
+ce qui est touché : une annonce, un compte, une Page, un catalogue. Cette
+distinction compte : une restriction de compte se traite avant tout le
+reste.
+
+Puis elle remonte du motif affiché à la cause réelle. C'est là qu'est la
+valeur : Meta affiche des motifs génériques, et « Pratiques commerciales
+inacceptables » peut venir de trois choses très différentes. Quand la pub
+est rattachée à une annonce déjà vérifiée par Gaby, Nina l'a sous les yeux
+et tranche ; sinon elle donne les causes les plus probables et ce qu'il
+faut vérifier.
+
+Elle envisage explicitement le faux positif, fréquent sur les comptes
+récents, et recommande une stratégie : corriger, contester, faire les deux,
+ou renoncer. Elle réécrit le texte en gardant l'angle marketing, et rédige
+la demande de révision — courte, factuelle, sans les arguments qui ne
+pèsent jamais (budget dépensé, ancienneté du compte, les autres font pire).
+
+### La boucle d'apprentissage
+
+Le champ « ce qui a débloqué » est le plus important de l'écran. Une fois
+la pub repassée, on note ce qui a marché. Ces résolutions sont réinjectées
+dans les diagnostics suivants du même client, et le bouton « Ajouter aux
+règles maison » verse le motif dans `pub_regles_maison`, que Gaby applique
+ensuite à toutes les vérifications.
+
+C'est ce qui fait qu'au bout de quelques mois l'outil connaît mieux les
+refus de vos clients que n'importe quelle règle générale.
+
 ## Ce qui n'est pas fait
 
 - L'écran de gestion des règles maison (la table `pub_regles_maison` existe
@@ -107,7 +142,8 @@ consigne qu'il faut resserrer, pas le code autour.
   les décrémente ni ne les fait payer.
 - La vitrine publique et les pages légales.
 - L'import depuis Google Drive : les fichiers se déposent à la main.
-- Nina.
+- L'écran de gestion des règles maison : elles s'ajoutent depuis Nina, mais
+  ne se relisent ni ne se modifient nulle part.
 
 Un point à garder en tête, et à dire aux clients : ce contrôle anticipe la
 décision de Meta, il ne la remplace pas.
